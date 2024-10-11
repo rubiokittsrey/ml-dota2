@@ -13,6 +13,9 @@ def parse_lineups(players: List) -> Tuple[List[int], List[int]]:
         else:
             dire.append(p['hero_id'])
     
+    radiant.sort()
+    dire.sort()
+
     return radiant, dire
 
 def parse_match(match: Dict) -> Dict:
@@ -50,7 +53,7 @@ if __name__ == "__main__":
 
     with open(json_path, 'r') as file:
         json_data = json.load(file)
-
+    
     for item in data:
         if item['match_id'] not in cache:
             cache.append(item['match_id'])
