@@ -1,59 +1,44 @@
-from typing import Dict
+from typing import Dict, List, Tuple
 import json
 
-def parse_match(match: Dict):
-    final = {
-        # general data
-        'match_id': match['match_id'],
-        'players': match['players'],
-        'radiant_win': match['radiant_win'],
-        #'start_time': match['start_time'],
-        'duration': match['duration'],
+json_path = 'simple_match_set.json'
 
-        # bitmask integers that represent which towers are still standing when the game ended
-        # 'barracks_status_dire': match['barracks_status_dire'],
-        # 'barracks_status_radiant': match['barracks_status_radiant'],
-        # 'tower_status_dire': match['tower_status_dire'],
-        # 'tower_status_radiant': match['tower_status_radiant'],
+def parse_lineups(players: List) -> Tuple[List[int], List[int]]:
+    dire = []
+    radiant = []
 
-        # kills when the match ended
-        # 'dire_score': match['dire_score'],
-        # 'radiant_score': match['radiant_score'],
+    for p in players:
+        if 0 <= p['player_slot'] <= 127:
+            radiant.append(p['hero_id'])
+        else:
+            dire.append(p['hero_id'])
+    
+    return radiant, dire
 
-        # radiant advantages (or disadvantages)
-        # 'radiant_gold_adv': match['radiant_gold_adv'],
-        # 'radiant_xp_adv': match['radiant_xp_adv'],
-    }
+def parse_match(match: Dict) -> Dict:
+    # hero lineups
+    radiant, dire = parse_lineups(match['players'])
 
-    fields = [
-        # general data
-        'match_id',
-        'players',
-        'radiant_win',
-        'start_time',
-        'duration',
+    try:
+        final = {
+            # general data
+            #'match_id': match['match_id'],
 
-        # bitmask integers that represent which towers are still standing when the game ended
-        'barracks_status_dire',
-        'barracks_status_radiant',
-        'tower_status_dire',
-        'tower_status_radiant'
+            # scores
+            'radiant_score': match['radiant_score'],
+            'dire_score': match['dire_score'],
 
-        # kills when the match ended
-        'dire_score',
-        'radiant_score',
+            # lineup
+            'radiant_lineup': radiant,
+            'dire_lineup': dire,
 
-        # radiant advantages (or disadvantages)
-        'radiant_gold_adv',
-        'radiant_xp_adv',
+            # target
+            'radiant_win': match['radiant_win'],
+        }
+    except KeyError:
+        raise
 
-        # radiant and dire lineups
-        'radiant_lineup',
-        'dire_lineup'
-    ]
-
-    lineup_fields = [
-    ]
+    return final
 
 if __name__ == "__main__":
     with open('matches_raw.json', 'r') as file:
@@ -63,12 +48,31 @@ if __name__ == "__main__":
     duplicates = 0
     cache = []
 
+    with open(json_path, 'r') as file:
+        json_data = json.load(file)
+
     for item in data:
         if item['match_id'] not in cache:
             cache.append(item['match_id'])
         else:
             duplicates += 1
         count += 1
-    
+
     print(f'count: {count}')
     print(f'duplicates: {duplicates}')
+
+    failed = 0
+    success = 0
+    for item in data:
+        try:
+            p = parse_match(item)
+            json_data.append(p)
+            success += 1
+        except KeyError:
+            failed += 1
+
+    with open(json_path, 'w') as file:
+        json.dump(json_data, file, indent=4)
+
+    print(f'failed: {failed}')
+    print(f'sucess: {success}')
