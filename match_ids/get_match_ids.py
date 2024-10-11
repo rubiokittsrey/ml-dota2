@@ -10,7 +10,7 @@ _match_id_cache: List[str] = []
 _json_path = 'ids.json'
 
 # params
-_quota = 2000
+_quota = 2024
 _matches_since = 1728086400
 _min_rank = 70
 _game_mode = 22
@@ -41,6 +41,9 @@ async def fetch_loop(url: str):
         return
 
     while len(_match_id_cache) < _quota:
+        # 3 minute await to refresh list
+        await asyncio.sleep(180)
+
         data: Any = None
         try:
             data = await fetch(session, url)
@@ -56,9 +59,6 @@ async def fetch_loop(url: str):
                 except Exception as e:
                     print(f'exception raised while appending match to match list: {str(e)}')
                     
-        # 3 minute await to refresh list
-        await asyncio.sleep(180)
-    
     await session.close()
 
 async def validator(start_time: int, game_mode: int, min_rank: int):
