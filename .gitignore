@@ -1,2 +1,4 @@
-*.json
+/matches_raw/matches_raw.json
+/final/dataset.json
+/match_ids/ids.json
 *.backup

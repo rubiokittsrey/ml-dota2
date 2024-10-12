@@ -2,8 +2,10 @@ from typing import Dict, List, Tuple
 import json
 
 json_path = 'simple_match_set.json'
+raw_set = '../matches_raw/matches_raw.json'
 
-def parse_lineups(players: List) -> Tuple[List[int], List[int]]:
+def parse_lineups(players: List) -> Tuple[
+    List[int], List[int]]:
     dire = []
     radiant = []
 
@@ -44,7 +46,7 @@ def parse_match(match: Dict) -> Dict:
     return final
 
 if __name__ == "__main__":
-    with open('matches_raw.json', 'r') as file:
+    with open(raw_set, 'r') as file:
         data = json.load(file)
 
     count = 0
